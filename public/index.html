@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sujal_live_bot | Console</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=VT323&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0c10;
+            --glass: rgba(22, 27, 34, 0.7);
+            --border: rgba(48, 54, 61, 0.8);
+            --accent: #58a6ff;
+            --success: #2ea043;
+            --danger: #f85149;
+            --warning: #d29922;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top right, #161b22, #0a0c10);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--glass);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-card h2 {
+            margin-bottom: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .login-card input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .login-card input:focus {
+            border-color: var(--accent);
+        }
+
+        .login-card button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-card button:active {
+            transform: scale(0.98);
+        }
+
+        /* Main Layout */
+        .sidebar {
+            width: 320px;
+            background: var(--glass);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            gap: 2rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            gap: 1.5rem;
+        }
+
+        .branding h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(45deg, #58a6ff, #bc8cff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Stats Card */
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        #health-bar {
+            background: var(--danger);
+            box-shadow: 0 0 10px rgba(248, 81, 73, 0.4);
+        }
+
+        #food-bar {
+            background: var(--warning);
+            box-shadow: 0 0 10px rgba(210, 153, 34, 0.4);
+        }
+
+        .coords {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .coord-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .coord-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--text-muted);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Console */
+        #console {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: 'VT323', monospace;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 1.25rem;
+            scroll-behavior: smooth;
+        }
+
+        .log-entry {
+            line-height: 1.2;
+            word-break: break-all;
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .log-time {
+            color: #aaaaaa;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        .log-type-info {
+            color: #55ffff;
+        }
+
+        .log-type-server {
+            color: #ffffff;
+        }
+
+        .log-type-bot {
+            color: #55ff55;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 12px;
+        }
+
+        #cmd-input {
+            flex: 1;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            padding: 1rem;
+            outline: none;
+            font-family: 'Fira Code', monospace;
+        }
+
+        #cmd-input:focus {
+            border-color: var(--accent);
+        }
+
+        /* Animation */
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        /* Classic Minecraft Inventory Grid */
+        .inv-classic-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .inv-top-section {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 2.5fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .inv-armor-slots {
+            display: grid;
+            grid-template-rows: repeat(4, 1fr);
+            gap: 4px;
+        }
+
+        .inv-character {
+            aspect-ratio: 1/1.5;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.1);
+        }
+
+        .inv-crafting {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .crafting-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+
+        .inv-slots-9x3 {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 4px;
+        }
+
+        .inv-hotbar-row {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 4px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .inv-slot {
+            aspect-ratio: 1;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .inv-slot:hover {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .inv-slot.empty::before {
+            content: attr(data-icon);
+            opacity: 0.15;
+            font-size: 0.9rem;
+        }
+
+        .slot-count {
+            position: absolute;
+            bottom: 1px;
+            right: 2px;
+            font-size: 0.65rem;
+            font-family: 'Fira Code', monospace;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .inv-slot .tooltip {
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1c2128;
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: 8px;
+            z-index: 200;
+            display: none;
+            width: 130px;
+            pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .inv-slot:hover .tooltip {
+            display: block;
+        }
+
+        /* Minecraft Colors */
+        .color-span {
+            display: inline;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .mc-0 {
+            color: #000000 !important;
+        }
+
+        .mc-1 {
+            color: #0000AA !important;
+        }
+
+        .mc-2 {
+            color: #00AA00 !important;
+        }
+
+        .mc-3 {
+            color: #00AAAA !important;
+        }
+
+        .mc-4 {
+            color: #AA0000 !important;
+        }
+
+        .mc-5 {
+            color: #AA00AA !important;
+        }
+
+        .mc-6 {
+            color: #FFAA00 !important;
+        }
+
+        .mc-7 {
+            color: #AAAAAA !important;
+        }
+
+        .mc-8 {
+            color: #555555 !important;
+        }
+
+        .mc-9 {
+            color: #5555FF !important;
+        }
+
+        .mc-a {
+            color: #55FF55 !important;
+        }
+
+        .mc-b {
+            color: #55FFFF !important;
+        }
+
+        .mc-c {
+            color: #FF5555 !important;
+        }
+
+        .mc-d {
+            color: #FF55FF !important;
+        }
+
+        .mc-e {
+            color: #FFFF55 !important;
+        }
+
+        .mc-f {
+            color: #FFFFFF !important;
+        }
+
+        .mc-l {
+            font-weight: bold;
+        }
+
+        .mc-m {
+            text-decoration: line-through;
+        }
+
+        .mc-n {
+            text-decoration: underline;
+        }
+
+        .mc-o {
+            font-style: italic;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(14px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Ninja_gamer_bot Console</h2>
+            <input type="password" id="admin-pass" placeholder="Authorization Token">
+            <button onclick="login()">Access Console</button>
+        </div>
+    </div>
+
+    <aside class="sidebar">
+        <div class="branding">
+            <h1><span>🤖</span> Sujal_live_bot</h1>
+        </div>
+
+        <div class="card">
+            <div class="stat-header">
+                <span>BOT STATUS</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="online-dot"></div>
+                    <span style="color:var(--success); font-size: 0.75rem;">LIVE</span>
+                </div>
+            </div>
+
+            <div class="stat-group" style="margin-top: 1.5rem;">
+                <div class="stat-header"><span>Health</span><span id="health-val">20/20</span></div>
+                <div class="progress-container">
+                    <div id="health-bar" class="progress-bar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="stat-group">
+                <div class="stat-header"><span>Hunger</span><span id="food-val">20/20</span></div>
+                <div class="progress-container">
+                    <div id="food-bar" class="progress-bar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="coords">
+                <div class="coord-box"><span class="coord-label">X</span><span id="pos-x">0</span></div>
+                <div class="coord-box"><span class="coord-label">Y</span><span id="pos-y">0</span></div>
+                <div class="coord-box"><span class="coord-label">Z</span><span id="pos-z">0</span></div>
+            </div>
+
+            <!-- Countdown Timer -->
+            <div
+                style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                <div
+                    style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">
+                    Next Auto Msg In</div>
+                <div id="promo-timer"
+                    style="font-size: 1.5rem; font-weight: 700; color: #58a6ff; font-family: monospace; text-shadow: 0 0 10px rgba(88,166,255,0.3); transition: color 0.3s;">
+                    --:--</div>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 1rem;">
+            <div class="inventory-header">
+                <span>INVENTORY</span>
+                <span id="inv-count-total" style="font-size: 0.75rem; color: var(--text-muted);">0 items</span>
+            </div>
+
+            <div class="inv-classic-container">
+                <!-- Top Section -->
+                <div class="inv-top-section">
+                    <div class="inv-armor-slots">
+                        <div id="slot-5" class="inv-slot empty" data-icon="🪖"></div>
+                        <div id="slot-6" class="inv-slot empty" data-icon="👕"></div>
+                        <div id="slot-7" class="inv-slot empty" data-icon="👖"></div>
+                        <div id="slot-8" class="inv-slot empty" data-icon="🥾"></div>
+                    </div>
+                    <div class="inv-character">👤</div>
+                    <div class="inv-crafting">
+                        <div class="crafting-grid">
+                            <div id="slot-1" class="inv-slot"></div>
+                            <div id="slot-2" class="inv-slot"></div>
+                            <div id="slot-3" class="inv-slot"></div>
+                            <div id="slot-4" class="inv-slot"></div>
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 1.2rem;">➡</div>
+                        <div id="slot-0" class="inv-slot"></div>
+                    </div>
+                </div>
+
+                <!-- Main Inventory Grid (9x3) -->
+                <div id="inv-main-grid" class="inv-slots-9x3">
+                    <!-- Slots 9-35 populating below -->
+                </div>
+
+                <!-- Off-hand + Hotbar Separator Area -->
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div id="slot-45" class="inv-slot empty" data-icon="🛡" style="width: 40px;"></div>
+                    <div id="inv-hotbar" class="inv-hotbar-row" style="flex: 1; margin: 0; border: none; padding: 0;">
+                        <!-- Slots 36-44 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="action('joinSurvival')">🚀 Join Survival</button>
+            <button class="btn" onclick="action('useItem')">🖱 Use Held Item</button>
+            <button class="btn" onclick="action('toggleAfk')">🔄 Toggle AFK</button>
+            <button class="btn" onclick="action('reconnect')">🔌 Force Reconnect</button>
+        </div>
+
+    </aside>
+
+    <main class="main-content">
+        <div id="console"></div>
+        <div class="input-area">
+            <input type="text" id="cmd-input" placeholder="Type command... (e.g. /tpa Sunil)"
+                onkeydown="if(event.key==='Enter') sendCmd()">
+            <button class="btn btn-primary" style="padding: 0 1.5rem;" onclick="sendCmd()">Send</button>
+        </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const consoleDiv = document.getElementById('console');
+        const overlay = document.getElementById('login-overlay');
+        const colorMap = {
+            'info': '#8b949e',
+            'success': '#3fb950',
+            'warn': '#d29922',
+            'error': '#f85149',
+            'cmd': '#58a6ff'
+        };
+        let authenticated = false;
+
+        function login() {
+            const pass = document.getElementById('admin-pass').value;
+            socket.emit('auth', pass);
+        }
+
+        socket.on('auth_success', () => {
+            authenticated = true;
+            overlay.style.display = 'none';
+            addLog('System', 'Initialization complete. Welcome back, Admin.', 'info');
+            socket.emit('bc_get');
+        });
+
+        socket.on('auth_fail', () => {
+            alert('Access Denied: Invalid Credentials');
+        });
+
+        socket.on('log', (data) => {
+            if (!authenticated) return;
+            addLog(data.type, data.msg, data.level, data.isRaw);
+        });
+
+        socket.on('status', (data) => {
+            if (!authenticated) return;
+
+            // Update Bars
+            document.getElementById('health-bar').style.width = (data.health / 20 * 100) + '%';
+            document.getElementById('health-val').innerText = Math.round(data.health) + '/20';
+
+            document.getElementById('food-bar').style.width = (data.food / 20 * 100) + '%';
+            document.getElementById('food-val').innerText = Math.round(data.food) + '/20';
+
+            // Update Coords
+            document.getElementById('pos-x').innerText = Math.round(data.pos.x);
+            document.getElementById('pos-y').innerText = Math.round(data.pos.y);
+            document.getElementById('pos-z').innerText = Math.round(data.pos.z);
+        });
+
+        const MC_COLORS = {
+            'black': '#000000', 'dark_blue': '#0000aa', 'dark_green': '#00aa00',
+            'dark_aqua': '#00aaaa', 'dark_red': '#aa0000', 'dark_purple': '#aa00aa',
+            'gold': '#ffaa00', 'gray': '#aaaaaa', 'dark_gray': '#555555',
+            'blue': '#5555ff', 'green': '#55ff55', 'aqua': '#55ffff',
+            'red': '#ff5555', 'light_purple': '#ff55ff', 'yellow': '#ffff55',
+            'white': '#ffffff'
+        };
+
+        function parseMinecraftMessage(json) {
+            if (typeof json === 'string') return `<span>${json}</span>`;
+            if (!json) return '';
+
+            // Handle standard text
+            let text = json.text || '';
+
+            // Handle Minecraft "Translate" messages (e.g. death messages, join messages)
+            if (json.translate) {
+                // If there's a translate key, it usually has 'with' for variables
+                // Simplified: just join the 'with' components or use the translate key as text
+                if (json.with && Array.isArray(json.with)) {
+                    text = json.with.map(item => {
+                        if (typeof item === 'object') return parseMinecraftMessage(item);
+                        return item;
+                    }).join(' ');
+                } else {
+                    text = json.translate;
+                }
+            }
+
+            const color = MC_COLORS[json.color] || json.color || 'inherit';
+            const bold = json.bold ? 'font-weight: bold;' : '';
+            const italic = json.italic ? 'font-style: italic;' : '';
+            const underline = json.underlined ? 'text-decoration: underline;' : '';
+            const strikethrough = json.strikethrough ? 'text-decoration: line-through;' : '';
+
+            let html = `<span style="color: ${color}; ${bold} ${italic} ${underline} ${strikethrough}">${text}</span>`;
+
+            if (json.extra) {
+                json.extra.forEach(extra => {
+                    html += parseMinecraftMessage(extra);
+                });
+            }
+            return html;
+        }
+
+        function addLog(type, msg, level, isRaw = false) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+            // Render Minecraft Colors from § codes
+            const formattedContent = renderMcText(msg);
+
+            entry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-type" style="color: ${colorMap[level] || 'white'}">[${type}]</span>
+                <span class="log-msg">${formattedContent}</span>
+            `;
+
+            consoleDiv.appendChild(entry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+
+            if (consoleDiv.children.length > 200) {
+                consoleDiv.removeChild(consoleDiv.firstChild);
+            }
+        }
+
+        function renderMcText(text) {
+            if (!text) return '';
+            if (typeof text !== 'string') text = String(text);
+
+            let result = '';
+            let openSpans = 1;
+            result += '<span class="color-span">';
+
+            // Split by § but handle Hex codes §#RRGGBB
+            const parts = text.split('§');
+            result += parts[0];
+
+            for (let i = 1; i < parts.length; i++) {
+                let part = parts[i];
+                if (part.length === 0) continue;
+
+                const firstChar = part.charAt(0).toLowerCase();
+
+                if (firstChar === '#') {
+                    // Check for Hex: #RRGGBB (6 chars)
+                    const hexMatch = part.match(/^#([A-Fa-f0-9]{6})(.*)/);
+                    if (hexMatch) {
+                        result += `<span style="color: #${hexMatch[1]} !important;">`;
+                        result += hexMatch[2]; // the rest of the text
+                        openSpans++;
+                        continue;
+                    }
+                }
+
+                if (firstChar === 'r') {
+                    while (openSpans > 0) { result += '</span>'; openSpans--; }
+                    result += '<span class="color-span">'; openSpans++;
+                } else if ("0123456789abcdefklmno".includes(firstChar)) {
+                    result += `<span class="mc-${firstChar}">`;
+                    openSpans++;
+                }
+
+                result += part.substring(1);
+            }
+
+            while (openSpans > 0) { result += '</span>'; openSpans--; }
+            return result;
+        }
+
+        function sendCmd() {
+            if (!authenticated) return;
+            const input = document.getElementById('cmd-input');
+            const cmd = input.value.trim();
+            if (cmd) {
+                socket.emit('cmd', cmd);
+                input.value = '';
+            }
+        }
+
+        socket.on('inventory', (slots) => {
+            if (!authenticated) return;
+
+            const totalItems = slots.filter(s => !s.isEmpty).length;
+            document.getElementById('inv-count-total').innerText = `${totalItems} items`;
+
+            // Initialize Grid Containers if first time
+            const mainGrid = document.getElementById('inv-main-grid');
+            const hotbarGrid = document.getElementById('inv-hotbar');
+
+            if (mainGrid.innerHTML === '') {
+                for (let i = 9; i <= 35; i++) {
+                    const slotDiv = document.createElement('div');
+                    slotDiv.id = `slot-${i}`;
+                    slotDiv.className = 'inv-slot empty';
+                    mainGrid.appendChild(slotDiv);
+                }
+            }
+            if (hotbarGrid.innerHTML === '') {
+                for (let i = 36; i <= 44; i++) {
+                    const slotDiv = document.createElement('div');
+                    slotDiv.id = `slot-${i}`;
+                    slotDiv.className = 'inv-slot empty';
+                    hotbarGrid.appendChild(slotDiv);
+                }
+            }
+
+            // Update all slots
+            slots.forEach(item => {
+                const slotDiv = document.getElementById(`slot-${item.slot}`);
+                if (!slotDiv) return;
+
+                if (item.isEmpty) {
+                    slotDiv.classList.add('empty');
+                    slotDiv.innerHTML = '';
+                } else {
+                    slotDiv.classList.remove('empty');
+
+                    let icon = '📦';
+                    const name = item.name.toLowerCase();
+                    if (name.includes('sword')) icon = '⚔️';
+                    else if (name.includes('pickaxe')) icon = '⛏️';
+                    else if (name.includes('apple') || name.includes('bread') || name.includes('steak') || name.includes('cooked')) icon = '🍖';
+                    else if (name.includes('helmet') || name.includes('chestplate') || name.includes('leggings') || name.includes('boots')) icon = '🛡️';
+                    else if (name.includes('diamond')) icon = '💎';
+                    else if (name.includes('iron')) icon = '⛓️';
+                    else if (name.includes('gold')) icon = '📀';
+                    else if (name.includes('bucket')) icon = '🪣';
+                    else if (name.includes('bow')) icon = '🏹';
+                    else if (name.includes('arrow')) icon = '📍';
+                    else if (name.includes('cobblestone') || name.includes('stone') || name.includes('dirt')) icon = '🧱';
+
+                    slotDiv.innerHTML = `
+                        <span>${icon}</span>
+                        ${item.count > 1 ? `<span class="slot-count">${item.count}</span>` : ''}
+                        <div class="tooltip">
+                            <div class="tooltip-title" style="font-size:0.75rem; margin-bottom:4px; color:var(--accent); font-weight:600;">${item.displayName}</div>
+                            <div style="display:flex; gap:2px;">
+                                <button class="tooltip-btn" onclick="invAction('equip', ${item.slot})" style="padding:2px; font-size:0.6rem;">Equip</button>
+                                <button class="tooltip-btn" onclick="invAction('use', ${item.slot})" style="padding:2px; font-size:0.6rem;">Use</button>
+                                <button class="tooltip-btn" onclick="invAction('drop1', ${item.slot})" style="padding:2px; font-size:0.6rem;">Toss 1</button>
+                                <button class="tooltip-btn" onclick="invAction('drop', ${item.slot})" style="padding:2px; font-size:0.6rem;">Toss All</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        });
+
+        function action(type) {
+            if (!authenticated) return;
+            socket.emit('action', type);
+        }
+
+        function invAction(action, slot) {
+            if (!authenticated) return;
+            socket.emit('inv_action', { action, slot });
+        }
+
+        socket.on('auto_msg_countdown', (data) => {
+            const timerDiv = document.getElementById('promo-timer');
+            if (!timerDiv) return;
+
+            const totalSeconds = Math.floor(data.remaining / 1000);
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+
+            timerDiv.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+            // Add a little glow pulse when close
+            if (totalSeconds < 10) {
+                timerDiv.style.color = '#ff7b72';
+                timerDiv.style.textShadow = '0 0 15px rgba(255,123,114,0.5)';
+            } else {
+                timerDiv.style.color = '#58a6ff';
+                timerDiv.style.textShadow = '0 0 10px rgba(88,166,255,0.3)';
+            }
+        });
+    </script>
+</body>
+
+</html>

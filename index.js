@@ -9,6 +9,14 @@ const { Server } = require('socket.io');
 const ADMIN_PASSWORD = process.env.ADMIN_PASS || 'Sujal8905';
 const PORT = process.env.PORT || 4000;
 
+// Validate Environment Variables for Render
+const requiredEnv = ['BOT_HOST', 'BOT_PORT', 'BOT_USERNAME'];
+const missingEnv = requiredEnv.filter(key => !process.env[key]);
+if (missingEnv.length > 0) {
+  console.error(`[System] CRITICAL ERROR: Missing environment variables: ${missingEnv.join(', ')}`);
+  console.error(`[System] Please add them in the Render Dashboard -> Environment tab.`);
+}
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -161,11 +169,14 @@ server.listen(PORT, () => {
 });
 
 function createBot() {
+  console.log(`[Bot] Connecting to ${process.env.BOT_HOST || 'play.khushigaming.com'}:${process.env.BOT_PORT || 25565} as ${process.env.BOT_USERNAME || 'Sujal_bot'}...`);
+  
   bot = mineflayer.createBot({
     host: process.env.BOT_HOST || 'play.khushigaming.com',
     port: parseInt(process.env.BOT_PORT) || 25565,
     username: process.env.BOT_USERNAME || 'Sujal_bot',
-    version: process.env.BOT_VERSION || false
+    version: process.env.BOT_VERSION || false,
+    hideErrors: false // Ensure we see full error stacks
   });
 
   bot.loadPlugin(pathfinder);
